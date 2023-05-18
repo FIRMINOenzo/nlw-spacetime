@@ -1,5 +1,15 @@
 import { StatusBar } from "expo-status-bar";
 import { ImageBackground, Text, View, TouchableOpacity } from "react-native";
+import { styled } from "nativewind";
+import { makeRedirectUri, useAuthRequest } from "expo-auth-session";
+import { useEffect } from "react";
+import { api } from "../src/lib/api";
+import * as SecureStore from "expo-secure-store";
+import { useRouter } from "expo-router";
+
+import blurBg from "../src/assets/bg-blur.png";
+import Stripes from "../src/assets/stripes.svg";
+import NLWLogo from "../src/assets/nlw-logo.svg";
 
 import {
   useFonts,
@@ -9,19 +19,54 @@ import {
 
 import { BaiJamjuree_700Bold } from "@expo-google-fonts/bai-jamjuree";
 
-import blurBg from "./src/assets/bg-blur.png";
-import Stripes from "./src/assets/stripes.svg";
-import NLWLogo from "./src/assets/nlw-logo.svg";
-import { styled } from "nativewind";
-
 const StyledStripes = styled(Stripes);
 
 export default function App() {
+  const router = useRouter();
+
   const [hasLoadedFonts] = useFonts({
     Roboto_400Regular,
     Roboto_700Bold,
     BaiJamjuree_700Bold,
   });
+
+  const discovery = {
+    authorizationEndpoint: "https://github.com/login/oauth/authorize",
+    tokenEndpoint: "https://github.com/login/oauth/access_token",
+    revocationEndpoint:
+      "https://github.com/settings/connections/applications/55bec1b49b3cada04a22",
+  };
+
+  const [request, response, signInWithGitHub] = useAuthRequest(
+    {
+      clientId: "55bec1b49b3cada04a22",
+      scopes: ["identity"],
+      redirectUri: makeRedirectUri({
+        scheme: "nlwspacetime",
+      }),
+    },
+    discovery
+  );
+
+  async function handleGithubOauthCode(code: string) {
+    const response = await api.post("/register", {
+      code,
+    });
+
+    const { token } = response.data;
+
+    await SecureStore.setItemAsync("token", token);
+
+    router.push("/memories");
+  }
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { code } = response.params;
+
+      handleGithubOauthCode(code);
+    }
+  }, [response]);
 
   if (!hasLoadedFonts) {
     return null;
@@ -51,6 +96,7 @@ export default function App() {
         <TouchableOpacity
           activeOpacity={0.7}
           className="rounded-full bg-green-500 px-5 py-3"
+          onPress={() => signInWithGitHub()}
         >
           <Text className="font-alt text-sm uppercase text-black">
             Cadastrar lembranças
