@@ -1,11 +1,12 @@
 import { Link } from "expo-router";
-import { Text, Switch, TouchableOpacity, View } from "react-native";
+import { Text, Switch, TouchableOpacity, View, TextInput, ScrollView } from "react-native";
 
 import Icon from "@expo/vector-icons/Feather";
 
 import NLWLogo from "../src/assets/nlw-logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
+import React from "react";
 
 export default function NewMemories() {
   const { bottom, top } = useSafeAreaInsets();
@@ -13,9 +14,9 @@ export default function NewMemories() {
   const [isPublic, setIsPublic] = useState(false);
 
   return (
-    <View
+    <ScrollView
       className="flex-1 px-8"
-      style={{ paddingBottom: bottom, paddingTop: top }}
+      contentContainerStyle={{ paddingBottom: bottom, paddingTop: top }}
     >
       <View className="mt-4 flex-row items-center justify-between">
         <NLWLogo />
@@ -39,7 +40,30 @@ export default function NewMemories() {
             Tornar memória pública
           </Text>
         </View>
+
+        <TouchableOpacity activeOpacity={0.7} className="h-32 items-center justify-center rounded-lg border border-dashed border-gray-500 bg-black/20">
+          <View className="flex-row items-center gap-2">
+            <Icon name="image" color="#fff" />
+            <Text className="font-body text-sm text-gray-200">Adicionar foto ou vídeo de capa</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TextInput 
+          multiline 
+          className="p-0 font-body text-lg text-gray-50"
+          placeholderTextColor={"#56565a"}
+          placeholder="Fique livre para adicionar fotos, vídeos e relatos sobre essa experiência que você quer lembrar para sempre"
+        />
+
+<TouchableOpacity
+          activeOpacity={0.7}
+          className="rounded-full items-center self-end bg-green-500 px-5 py-3"
+        >
+          <Text className="font-alt text-sm uppercase text-black">
+            Salvar
+          </Text>
+        </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 }
